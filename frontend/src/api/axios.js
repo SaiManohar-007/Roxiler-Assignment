@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://roxiler-assignment-dr1u.onrender.com',
+  baseURL: 'https://roxiler-assignment-dr1u.onrender.com/api',
 });
 
 // Automatically attach token if it exists
