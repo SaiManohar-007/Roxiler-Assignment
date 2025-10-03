@@ -1,19 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '../api/axios';
 
 export default function Stores() {
   const [stores, setStores] = useState([]);
   const [ratings, setRatings] = useState({});
   const [message, setMessage] = useState('');
+  const [averageRatings, setAverageRatings] = useState({});
 
   const token = localStorage.getItem('token');
 
   const fetchStores = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/stores', {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await API.get('/stores', {
+        headers: { Authorization: `Bearer ${token}` },
       });
       setStores(res.data);
+
+      // fetch ratings for each store
+      const ratingsData = {};
+      for (const store of res.data) {
+        const ratingRes = await API.get(`/ratings/average/${store._id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        ratingsData[store._id] = ratingRes.data.average || 0;
+      }
+      setAverageRatings(ratingsData);
+
     } catch (err) {
       console.error(err);
     }
@@ -25,12 +37,13 @@ export default function Stores() {
 
   const submitRating = async (storeId) => {
     try {
-      const res = await axios.post(
-        `http://localhost:8080/api/ratings/${storeId}`,
-        { rating: ratings[storeId] },
+      await API.post(
+        `/ratings/${storeId}`,
+        { rating: Number(ratings[storeId]) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setMessage(`Rating submitted for store: ${storeId}`);
+      fetchStores(); // refresh average ratings
     } catch (err) {
       setMessage(err.response?.data?.message || 'Error submitting rating');
     }
@@ -50,6 +63,7 @@ export default function Stores() {
             <th>Name</th>
             <th>Email</th>
             <th>Address</th>
+            <th>Average Rating</th>
             <th>Your Rating</th>
             <th>Action</th>
           </tr>
@@ -60,6 +74,7 @@ export default function Stores() {
               <td>{store.name}</td>
               <td>{store.email}</td>
               <td>{store.address}</td>
+              <td>{averageRatings[store._id]?.toFixed(1) || 'N/A'}</td>
               <td>
                 <input
                   type="number"

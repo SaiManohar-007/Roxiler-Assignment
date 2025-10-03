@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import API from '../api/axios'; // your axios instance that can include baseURL
+import API from '../api/axios'; 
+import Header from '../components/Header';
 
 export default function Dashboard() {
   const [transactions, setTransactions] = useState([]);
@@ -53,7 +54,9 @@ export default function Dashboard() {
   }, []);
 
   return (
+    
     <div style={{ maxWidth: '900px', margin: '50px auto' }}>
+        <Header />
       <h2>Transactions Dashboard</h2>
 
       <form onSubmit={handleAddTransaction} style={{ marginBottom: '30px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
